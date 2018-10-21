@@ -15,7 +15,7 @@ labeled, unlabeled = train_test_split(juul_merged, test_size=0.99)
 
 # Store Juul tweets in a SQLite database
 conn = sqlite3.connect('juul.db')
-cur = conn.cursor(
+cur = conn.cursor()
 juul_merged.to_sql('juul_merged_table', conn, if_exists='append')
 labeled.to_sql('juul_labeled_table', conn, if_exists='append')
 unlabeled.to_sql('juul_unlabeled_table', conn, if_exists='append')    
