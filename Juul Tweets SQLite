@@ -1,0 +1,28 @@
+import pandas as pd
+import sqlite3
+
+# Merge two Juul data sets 
+juul_keywords = pd.read_excel('Juul-Keywords-Original.xlsx')
+juul_hashtags = pd.read_excel('#Juul-Original.xlsx')
+frames = [juul_keywords, juul_hashtags]
+juul_merged = pd.concat(frames)
+juul_merged = juul_merged.drop_duplicates(subset='tweet_id', keep="last")
+
+# In addition, I need to store two data sets in the SQLite database.
+# One is the labeled Juul tweets for training and validation. Another is the unlabeled tweets for classification.
+from sklearn.model_selection import train_test_split
+labeled, unlabeled = train_test_split(juul_merged, test_size=0.99)
+
+# Store Juul tweets in a SQLite database
+conn = sqlite3.connect('juul.db')
+cur = conn.cursor(
+juul_merged.to_sql('juul_merged_table', conn, if_exists='append')
+labeled.to_sql('juul_labeled_table', conn, if_exists='append')
+unlabeled.to_sql('juul_unlabeled_table', conn, if_exists='append')    
+pd.read_sql_query("select * from juul_merged_table;", conn)
+
+cur.close()
+conn.close()
+
+# import the labeled tweets as a csv file
+labeled.to_csv('Juul-Labeled.csv', encoding='utf-8')
